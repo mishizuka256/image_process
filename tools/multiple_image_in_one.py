@@ -36,12 +36,21 @@ def get_concat_tile_resize(im_list_2d, resample=Image.BICUBIC):
     im_list_v = [get_concat_h_multi_resize(im_list_h, resample=resample) for im_list_h in im_list_2d]
     return get_concat_v_multi_resize(im_list_v, resample=resample)
 
+def crop_center(pil_img, crop_width, crop_height):
+    img_width, img_height = pil_img.size
+    return pil_img.crop(((img_width - crop_width) // 2,
+                        (img_height - crop_height) // 2,
+                        (img_width + crop_width) // 2,
+                        (img_height + crop_height) // 2))
 
 def main(args):
     img_dir = args.img_dir
 
-    MIN_FRAME_W = 140
+    # MIN_FRAME_W = 180
+    MIN_FRAME_W = 128
     RESIZE_RESOLUTION = (int(MIN_FRAME_W), int(MIN_FRAME_W * 3 / 4))
+    # TARGET_RESOLUTION = (1150, 650)
+    TARGET_RESOLUTION = (700, 400)
 
     img_list = []
     for root, _, files in os.walk(img_dir):
@@ -52,19 +61,27 @@ def main(args):
                 continue
             img = Image.open(i_file)
             width, height = img.size
-            img_crop = img.crop((0, 0, width, width * 3 / 4))
+            if height > width * 3 / 4:
+                img_crop = img.crop((0, 0, width, width * 3 / 4))
+            else:
+                img_crop = img.crop((0, 0, height * 4 / 3, height))
             img_resize = img_crop.resize(RESIZE_RESOLUTION)
             img_list.append(img_resize)
 
+    NUM_HORIZON_FRAMES = int(TARGET_RESOLUTION[0] / MIN_FRAME_W + 1)
+    img_new = get_concat_tile_resize([img_list[0:NUM_HORIZON_FRAMES],
+                            img_list[NUM_HORIZON_FRAMES*1:NUM_HORIZON_FRAMES*2],
+                            img_list[NUM_HORIZON_FRAMES*2:NUM_HORIZON_FRAMES*3],
+                            img_list[NUM_HORIZON_FRAMES*3:NUM_HORIZON_FRAMES*4],
+                            img_list[NUM_HORIZON_FRAMES*4:NUM_HORIZON_FRAMES*5],
+                            img_list[NUM_HORIZON_FRAMES*5:NUM_HORIZON_FRAMES*6]])
+    img_new_crop = crop_center(img_new, TARGET_RESOLUTION[0], TARGET_RESOLUTION[1])
+    img_new_crop.save('out.jpg', quality=100)
 
-    import pdb; pdb.set_trace()
-    get_concat_tile_resize([img_list[0:10],
-                            img_list[10:20],
-                            img_list[20:30],
-                            img_list[30:40],
-                            img_list[40:50],
-                            img_list[50:60],
-                            img_list[60:70]]).save('out.jpg')
+    img_rgba = img_new_crop.copy()
+    img_rgba.putalpha(128)
+    img_rgba.save('alpha.png')
+    
     print('end')
 
     
