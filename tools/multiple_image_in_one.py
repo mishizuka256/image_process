@@ -46,11 +46,11 @@ def crop_center(pil_img, crop_width, crop_height):
 def main(args):
     img_dir = args.img_dir
 
-    # MIN_FRAME_W = 180
-    MIN_FRAME_W = 128
+    MIN_FRAME_W = 168
+    # MIN_FRAME_W = 128
     RESIZE_RESOLUTION = (int(MIN_FRAME_W), int(MIN_FRAME_W * 3 / 4))
-    # TARGET_RESOLUTION = (1150, 650)
-    TARGET_RESOLUTION = (700, 400)
+    TARGET_RESOLUTION = (1150, 650)
+    # TARGET_RESOLUTION = (700, 400)
 
     img_list = []
     for root, _, files in os.walk(img_dir):
@@ -73,8 +73,8 @@ def main(args):
                             img_list[NUM_HORIZON_FRAMES*1:NUM_HORIZON_FRAMES*2],
                             img_list[NUM_HORIZON_FRAMES*2:NUM_HORIZON_FRAMES*3],
                             img_list[NUM_HORIZON_FRAMES*3:NUM_HORIZON_FRAMES*4],
-                            img_list[NUM_HORIZON_FRAMES*4:NUM_HORIZON_FRAMES*5],
-                            img_list[NUM_HORIZON_FRAMES*5:NUM_HORIZON_FRAMES*6]])
+                            img_list[NUM_HORIZON_FRAMES*4:NUM_HORIZON_FRAMES*5]
+                            ])
     img_new_crop = crop_center(img_new, TARGET_RESOLUTION[0], TARGET_RESOLUTION[1])
     img_new_crop.save('out.jpg', quality=100)
 
